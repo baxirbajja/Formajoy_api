@@ -24,80 +24,28 @@ const app = express();
 
 // Middleware
 // Configuration CORS améliorée pour résoudre les problèmes d'en-têtes manquants
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? [
-      'https://formajoy.vercel.app',
-      'https://formajoy-git-main-formajoy.vercel.app',
-      'https://formajoyapi-production.up.railway.app',
-      'https://formajoy.netlify.app',
-      'https://formajoy-app.netlify.app',
-      // Autoriser tous les sous-domaines de vercel.app
-      /\.vercel\.app$/,
-      // Autoriser tous les sous-domaines de netlify.app
-      /\.netlify\.app$/
-    ]
-  : [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'http://localhost:3000'
-    ];
+// Accept all origins
+const allowedOrigins = '*';
 
 // Configuration du middleware CORS avec options
 app.use(cors({
-  origin: function(origin, callback) {
-    // Permettre les requêtes sans origine (comme les appels API mobiles ou Postman)
-    if (!origin) return callback(null, true);
-    
-    // Vérifier si l'origine correspond à l'une des origines autorisées
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (typeof allowedOrigin === 'string') {
-        return allowedOrigin === origin;
-      }
-      // Si c'est une expression régulière
-      if (allowedOrigin instanceof RegExp) {
-        return allowedOrigin.test(origin);
-      }
-      return false;
-    });
-    
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.log(`Origine refusée par CORS: ${origin}`);
-      callback(null, false);
-    }
-  },
+  origin: '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Total-Count'],
+  preflightContinue: true,
+  optionsSuccessStatus: 200,
   maxAge: 86400
 }));
 
 // Middleware pour gérer les requêtes OPTIONS préliminaires
- app.options('*', (req, res) => {
-  const origin = req.header('Origin');
-  // Vérifier si l'origine est autorisée
-  const isAllowed = allowedOrigins.some(allowedOrigin => {
-    if (typeof allowedOrigin === 'string') {
-      return allowedOrigin === origin;
-    }
-    // Si c'est une expression régulière
-    if (allowedOrigin instanceof RegExp) {
-      return allowedOrigin.test(origin);
-    }
-    return false;
-  });
-  
-  // Définir l'en-tête Access-Control-Allow-Origin avec l'origine spécifique si elle est autorisée
-  if (isAllowed && origin) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.status(204).end();
+  res.status(200).end();
 });
 
 app.use(express.json());
