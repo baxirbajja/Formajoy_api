@@ -75,9 +75,26 @@ app.use(cors({
 }));
 
 // Middleware pour gérer les requêtes OPTIONS préliminaires
-app.options('*', (req, res) => {
-  // Ajouter les en-têtes CORS manuellement pour les requêtes OPTIONS
-  res.header('Access-Control-Allow-Origin', '*');
+ app.options('*', (req, res) => {
+  const origin = req.header('Origin');
+  // Vérifier si l'origine est autorisée
+  const isAllowed = allowedOrigins.some(allowedOrigin => {
+    if (typeof allowedOrigin === 'string') {
+      return allowedOrigin === origin;
+    }
+    // Si c'est une expression régulière
+    if (allowedOrigin instanceof RegExp) {
+      return allowedOrigin.test(origin);
+    }
+    return false;
+  });
+  
+  // Définir l'en-tête Access-Control-Allow-Origin avec l'origine spécifique si elle est autorisée
+  if (isAllowed && origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.status(204).end();
