@@ -23,14 +23,41 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? ['https://formajoy.vercel.app', 'https://formajoy-git-main-formajoy.vercel.app'] : ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 600
-}));
+// Configuration CORS améliorée pour résoudre les problèmes d'en-têtes manquants
+app.use((req, res, next) => {
+  const allowedOrigins = process.env.NODE_ENV === 'production' 
+    ? [
+        'https://formajoy.vercel.app',
+        'https://formajoy-git-main-formajoy.vercel.app',
+        'https://formajoyapi-production.up.railway.app'
+      ]
+    : [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:3000'
+      ];
+
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range, X-Total-Count');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  next();
+});
+
+// Utilisation du middleware CORS standard en complément
+app.use(cors());
+
 app.use(express.json());
 
 // Message de bienvenue pour tester l'API
