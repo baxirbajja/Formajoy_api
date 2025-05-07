@@ -29,25 +29,18 @@ const allowedOrigins = '*';
 
 // Configuration du middleware CORS avec options
 app.use(cors({
-  origin: '*',
+  origin: function(origin, callback) {
+    callback(null, true); // Allow all origins
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Total-Count'],
-  preflightContinue: true,
-  optionsSuccessStatus: 200,
-  maxAge: 86400
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
-// Middleware pour gérer les requêtes OPTIONS préliminaires
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.status(200).end();
-});
-
+// Remove the separate OPTIONS middleware since it's handled by cors package
 app.use(express.json());
 
 // Message de bienvenue pour tester l'API
