@@ -34,11 +34,14 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'access-control-allow-origin', 'Access-Control-Allow-Origin', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Total-Count'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
+// Middleware pour gérer explicitement les requêtes OPTIONS préliminaires
+app.options('*', cors());
 
 // Remove the separate OPTIONS middleware since it's handled by cors package
 app.use(express.json());
